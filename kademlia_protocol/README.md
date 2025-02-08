@@ -16,19 +16,24 @@
 }
 ```
 ### PONG 
+```
 { 
     "type": "PONG",
     "node_id": "node_id
 }
+```
 
 ### FIND_NODE
+```
 {
     "type": "FIND_NODE",
     "sendor_id": "0xaaaabbbbccccffff...",
     "target_id": "0x1111222233334444...",
 }
+```
 
 ### FIND_NODE response NODE_LIST
+```
 { 
     "type": "NODE_LIST",
     "nodes": [
@@ -37,9 +42,13 @@
         ...
     ]
 }
+```
 
 ### STORE
+```
 todo
-
+```
 ### FIND_VALUE
+```
 todo
+```
