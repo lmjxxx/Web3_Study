@@ -1,12 +1,10 @@
 # p2p basic 
+    * Python 
+    * asyncio : asynchronous I/O, event Loop
+    * sockt, asyncio Datagram Protocol : for UDP
+    * json : message serialization, deserialization
 
----
-    - Python 
-    - asyncio : asynchronous I/O, event Loop
-    - sockt, asyncio Datagram Protocol : for UDP
-    - json : message serialization, deserialization
-
-    - kademlia_protocol
+    * kademlia_protocol
         - Kademlia DHT Protocol
 
     ## 1. message
@@ -16,7 +14,7 @@
                 "type": "PING",
                 "node_id": node_id
             }
-        
+            ```
         ### PONG 
             { 
                 "type": "PONG",
