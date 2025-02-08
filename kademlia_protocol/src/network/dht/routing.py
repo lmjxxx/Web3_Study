@@ -1,14 +1,5 @@
-
-class RoutingTable:
-    def __init__(self, node):
-        self.node = node
-        self.table = {}
-
-    def add_node(self, node_id, node):
-        self.table[node_id] = node
-    
 class KBucket:
-    def __init__(slef, range_min,range_max, k=20):
+    def __init__(self, range_min,range_max, k=20):
         self.random_min = range_min # min range
         self.range_max = range_max # max range 
         self.k = k
@@ -61,7 +52,7 @@ class RoutingTable:
             return 
         self.buckets[idx].add_node(node)
 
-    def find_closest(self, target_id, count=None);
+    def find_closest(self, target_id, count=None):
         all_nodes = []
         for bucket in self.buckets:
             all_nodes.extend(bucket.nodes)
