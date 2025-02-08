@@ -68,6 +68,7 @@ class KademliaProtocol(asyncio.DatagramProtocol):
         for node_info in nodes:
             new_node = Node(node_info["node_id"], node_info["ip"], node_info["port"])
             self.node.routing_table.update(new_node) # Node 의 라우팅 테이블에 새 노드 추가
+            print(self.node.routing_table)
             print(f"Added node {new_node.node_id} to k-bucket")
         
     
