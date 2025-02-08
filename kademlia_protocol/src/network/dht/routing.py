@@ -52,11 +52,10 @@ class RoutingTable:
             return 
         self.buckets[idx].add_node(node)
 
-    def find_closest(self, target_id, count=None):
+    def find_closest(self, target_id, count=5):
         all_nodes = []
         for bucket in self.buckets:
             all_nodes.extend(bucket.nodes)
-        
 
         # sort by xor distance
         all_nodes.sort(key=lambda n: self.xor_distance(n.node_id, target_id))

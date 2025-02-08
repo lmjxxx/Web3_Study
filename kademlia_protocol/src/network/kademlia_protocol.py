@@ -8,13 +8,35 @@ class KademliaProtocol(asyncio.DatagramProtocol):
         self.node = node
         self.transport = None
 
-    def connection_mode(self, transport):
+    def connection_made(self, transport):
         self.transport = transport
+        self.node.transport = transport # Node - Transport 
         print(f"UDP server started at {self.node.ip}:{self.node.port}")
 
     def datagram_received(self, data, addr):
         message = data.decode()
         print(f"received [{addr}]: {message}")
+        try:
+            message_obj = json.loads(message)
+            msg_type = message_obj.get("type")
+            if msg_type == "FIND_NODE":
+                self.handle_find_node(message_obj, addr)
+            elif msg_type == "NODE_LIST":
+                self.handle_node_list(message_obj)
+            elif msg_type == "PING":
+                self.handle_ping(message_obj, addr)
+            elif msg_type == "PONG":
+                self.handle_pong(message_obj, addr)
+            elif msg_type == "STORE":
+                self.handle_store(message_obj, addr)
+            elif msg_type == "FIND_VALUE":
+                self.hadnel_find_value(message_obj, addr)
+            else:
+                print("Unknown message type.")
+            
+        except json.JSONDecodeError:
+            print("Invalid JSON format.")
+            
 
     def handle_ping(self, message, addr):
         # pong 
@@ -30,7 +52,24 @@ class KademliaProtocol(asyncio.DatagramProtocol):
 
     def handle_find_node(self, message, addr):
         # todo
+        target_id = message["target_id"]
+        closest_nodes = self.node.routing_table.find_closest(target_id, count=5) # Node's Routing Table
         print(f"FIND_NODE received from {addr}, Node ID : {message.get("node_id")}")
+        response = {
+            "type": "NODE_LIST",
+            "nodes": [{"node_id": n.node_id, "ip": n.ip, "port":n.port} for n in closest_nodes]
+        }
+        self.transport.sendto(json.dumps(response).encode(), addr)
+        print(f"Sent NODE_LIST to {addr}")
+
+    def handle_node_list(self, message):
+        # NODE_LIST message : 받은 노드들을 k-bucket에 추가
+        nodes = message["nodes"]
+        for node_info in nodes:
+            new_node = Node(node_info["node_id"], node_info["ip"], node_info["port"])
+            self.node.routing_table.update(new_node) # Node 의 라우팅 테이블에 새 노드 추가
+            print(f"Added node {new_node.node_id} to k-bucket")
+        
     
     def handle_store(self, message, addr):
         # todo
