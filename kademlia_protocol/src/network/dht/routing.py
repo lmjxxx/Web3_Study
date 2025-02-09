@@ -17,7 +17,6 @@ class KBucket:
             self.nodes.append(node)
         else:
             # bucket full, check old node 
-            # todo : change node before ping check
             oldest_node = min(self.nodes, key=lambda n: n.last_seen)
             self.nodes.remove(oldest_node)
             self.nodes.append(node)
