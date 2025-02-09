@@ -9,7 +9,7 @@ import time
 
 async def main():
     parser = argparse.ArgumentParser(description="Kademlia P2P node")
-    parser.add_argument("--port", type=int, help="Port number for the node", required=True)
+    parser.add_argument("--port", type=int, help="Port number for the node")
     parser.add_argument("--message", type=str, help="Protocol type PING, FIND_NODE, STORE, FIND_VALUE")
     parser.add_argument("--ip", type=str, help="IP", default="127.0.0.1")
     parser.add_argument("--bootstrap", action="store_true", help="Bootstrap Node")

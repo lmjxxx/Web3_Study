@@ -8,6 +8,7 @@ class KademliaProtocol(asyncio.DatagramProtocol):
     def __init__(self, node):
         self.node = node
         self.transport = None
+        self.pending_pongs = {} # PING 을 보낸 후 그 응답을 기다리는 상태를 관리 key: node_id, value: asyncio.Future 객체
 
     def connection_made(self, transport):
         self.transport = transport
@@ -16,6 +17,8 @@ class KademliaProtocol(asyncio.DatagramProtocol):
 
         self.node.routing_table.update(self.node)
         print(f"Node {self.node.node_id} added to its own routing table.")
+
+        asyncio.create_task(self.send_periodic_ping())
 
     def datagram_received(self, data, addr):
         message = data.decode()
@@ -98,8 +101,17 @@ class KademliaProtocol(asyncio.DatagramProtocol):
         while True:
             for bucket in self.node.routing_table.buckets:
                 for node in bucket.nodes:
+                    if node.node_id == self.node.node_id: # fix : 자기 자신은 건너 뜀
+                        continue
                     await self.ping_node(node)
             await asyncio.sleep(30) # 30 초 마다 PING 전송
+
+    async def wait_for_pong(self, node):
+        # PONG 을 기다리는 Future 객체 
+        future = asyncio.Future() # 비동기 작업의 결과를 표현하기 위해 사용
+        self.pending_pongs[node.node_id] = future
+        await future
+        del self.pending_pongs[node.node_id]
 
     async def ping_node(self, node):
         # 특정 노드에 ping 전송
@@ -115,3 +127,5 @@ class KademliaProtocol(asyncio.DatagramProtocol):
             # 응답이 없으면 노드 제거
             print(f"Node {node.node_id} did not respond. Removing from k-bucket")
             self.node.routing_table.remove(node)
+
+    
