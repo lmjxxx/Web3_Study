@@ -1,4 +1,5 @@
 import asyncio
+import network.dht.node as node
 import json
 import random
 import hashlib
@@ -12,6 +13,9 @@ class KademliaProtocol(asyncio.DatagramProtocol):
         self.transport = transport
         self.node.transport = transport # Node - Transport 
         print(f"UDP server started at {self.node.ip}:{self.node.port}")
+
+        self.node.routing_table.update(self.node)
+        print(f"Node {self.node.node_id} added to its own routing table.")
 
     def datagram_received(self, data, addr):
         message = data.decode()
@@ -52,24 +56,32 @@ class KademliaProtocol(asyncio.DatagramProtocol):
 
     def handle_find_node(self, message, addr):
         # todo
+        sendor_id = message["sendor_id"]
+        print(f"FIND_NODE received from {addr}, Node ID : {message.get("node_id")}")
+
+        new_node = node.Node(sendor_id, addr[0], addr[1])
+        self.node.routing_table.update(new_node)
+        print(f"Added {new_node.node_id} to local k-bucket.")
+
         target_id = message["target_id"]
         closest_nodes = self.node.routing_table.find_closest(target_id, count=5) # Node's Routing Table
-        print(f"FIND_NODE received from {addr}, Node ID : {message.get("node_id")}")
+
         response = {
             "type": "NODE_LIST",
             "nodes": [{"node_id": n.node_id, "ip": n.ip, "port":n.port} for n in closest_nodes]
         }
+        
         self.transport.sendto(json.dumps(response).encode(), addr)
-        print(f"Sent NODE_LIST to {addr}")
+        print(f"Sent NODE_LIST to {json.dumps(response)}")
 
     def handle_node_list(self, message):
         # NODE_LIST message : 받은 노드들을 k-bucket에 추가
         nodes = message["nodes"]
         for node_info in nodes:
-            new_node = Node(node_info["node_id"], node_info["ip"], node_info["port"])
+            new_node = node.Node(node_info["node_id"], node_info["ip"], node_info["port"])
             self.node.routing_table.update(new_node) # Node 의 라우팅 테이블에 새 노드 추가
             print(self.node.routing_table)
-            print(f"Added node {new_node.node_id} to k-bucket")
+        print(self.node.routing_table.chk_bucket())
         
     
     def handle_store(self, message, addr):

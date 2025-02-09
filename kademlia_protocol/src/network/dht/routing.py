@@ -22,6 +22,7 @@ class KBucket:
             self.nodes.remove(oldest_node)
             self.nodes.append(node)
 
+
 class RoutingTable:
     def __init__(self, local_node_id, k=20, id_bits=160):
         self.local_node_id = local_node_id
@@ -33,12 +34,19 @@ class RoutingTable:
             range_min = 2 ** i
             range_max = 2 ** (i+1)
             self.buckets.append(KBucket(range_min, range_max))
-        
+    
+    
+    def chk_bucket(self):
+        for i, bucket in enumerate(self.buckets):
+            print(f"Kbucket {i}: Node Count = {len(bucket.nodes)}")
+            for node in bucket.nodes:
+                print(f"    Node ID: {node.node_id}, IP: {node.ip}, Port: {node.port}")
+
     def xor_distance(self, id1, id2):
         # id1, id2 : hex string
         return int(id1, 16) ^ int(id2, 16)
 
-    def bucket_index(self, node_id):
+    def bucket_idx(self, node_id):
         distance = self.xor_distance(self.local_node_id, node_id)
         if distance == 0:
             return 0 # local node
