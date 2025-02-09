@@ -35,7 +35,13 @@ class RoutingTable:
             range_max = 2 ** (i+1)
             self.buckets.append(KBucket(range_min, range_max))
     
-    
+    def remove(self, node):
+        # 라우팅 테이블에서 특정 노드 제거
+        bucket_idx = self.get_bucket_idx(node.node_id)
+        bucket = self.buckets[bucket_idx]
+        bucket.nodes = [n for n in bucket.nodes if n.node_id != node.node_id]
+        print(f"Remove node {node.node_id} fro mbucket {bucket_idx}")
+
     def chk_bucket(self):
         for i, bucket in enumerate(self.buckets):
             print(f"Kbucket {i}: Node Count = {len(bucket.nodes)}")

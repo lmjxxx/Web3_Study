@@ -92,3 +92,26 @@ class KademliaProtocol(asyncio.DatagramProtocol):
         # todo
         print(f"FIND_VALUE received from {addr}, Node ID : {message.get("node_id")}")
 
+
+    async def send_periodic_ping(self):
+        # 주기적으로 라우팅 테이블에 있는 모든 녿에 PING 전송, 응답 확인
+        while True:
+            for bucket in self.node.routing_table.buckets:
+                for node in bucket.nodes:
+                    await self.ping_node(node)
+            await asyncio.sleep(30) # 30 초 마다 PING 전송
+
+    async def ping_node(self, node):
+        # 특정 노드에 ping 전송
+        ping_message = {"type": "PING", "node_id": self.node.node_id}
+        self.transport.sendto(json.dumps(ping_message).encode(), (node.ip, node.port))
+        print(f"Sent Ping to {node.ip}:{node.port}")
+
+        try:
+            # 5초 기다림
+            await asyncio.wait_for(self.wait_for_pong(node), timeout=5)
+            print(f"PONG received from {node.ip}:{node.port}")
+        except asyncio.TimeoutError:
+            # 응답이 없으면 노드 제거
+            print(f"Node {node.node_id} did not respond. Removing from k-bucket")
+            self.node.routing_table.remove(node)
