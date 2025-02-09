@@ -40,7 +40,7 @@ class RoutingTable:
         bucket_idx = self.bucket_idx(node.node_id)
         bucket = self.buckets[bucket_idx]
         bucket.nodes = [n for n in bucket.nodes if n.node_id != node.node_id]
-        print(f"Remove node {node.node_id} fro mbucket {bucket_idx}")
+        print(f"Remove node {node.node_id} from bucket {bucket_idx}")
 
     def chk_bucket(self):
         # change : 값이 있는 버킷만 출력

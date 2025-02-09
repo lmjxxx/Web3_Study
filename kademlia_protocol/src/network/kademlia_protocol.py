@@ -55,7 +55,13 @@ class KademliaProtocol(asyncio.DatagramProtocol):
         print(f"send [{addr}]: {response}")
 
     def handle_pong(self, message, addr):
+        node_id = message["node_id"]
         print(f"PONG received from {addr}, Node ID : {message.get("node_id")}")
+
+        # pending_pongs 에 해당 노드가 있으면 Future완료
+        if node_id in self.pending_pongs:
+            self.pending_pongs[node_id].set_result(True)
+            del self.pending_pongs[node_id] # Future 제거
 
     def handle_find_node(self, message, addr):
         # todo
@@ -110,8 +116,11 @@ class KademliaProtocol(asyncio.DatagramProtocol):
         # PONG 을 기다리는 Future 객체 
         future = asyncio.Future() # 비동기 작업의 결과를 표현하기 위해 사용
         self.pending_pongs[node.node_id] = future
-        await future
-        del self.pending_pongs[node.node_id]
+        try:
+            await future # 응답이 올 때까지 대기
+        finally:
+            if node.node_id in self.pending_pongs:
+                del self.pending_pongs[node.node_id]
 
     async def ping_node(self, node):
         # 특정 노드에 ping 전송

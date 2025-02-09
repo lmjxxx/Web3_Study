@@ -18,7 +18,7 @@ async def main():
     loop = asyncio.get_running_loop()
 
     if args.bootstrap:
-        bootstrap_node = node.Node("0x000000000000000000", "127.0.0.1", 8000)
+        bootstrap_node = node.Node("0000000000000000000000000000000000000000", "127.0.0.1", 8000)
         transport, protocol = await loop.create_datagram_endpoint(
             lambda: kademlia.KademliaProtocol(bootstrap_node),
             local_addr=(bootstrap_node.ip, bootstrap_node.port)
@@ -47,7 +47,7 @@ async def main():
             "target_id": "0000000000000000000000000000000000000000" # bootstrap_node
         }
         new_node.transport.sendto(json.dumps(find_node_request).encode(), ("127.0.0.1", 8000))
-        print("send FIND_NODE message to {target_id}")
+        print(f"send FIND_NODE message to {find_node_request["target_id"]}")
 
         try:
             await asyncio.sleep(100)
